@@ -165,11 +165,24 @@ class DatasetRegistry:
         # Register dataset in session
         session_manager.attach_dataset(session_id, dataset_id)
 
+        # Update admin telemetry for dataset ingestion
+        try:
+            from app.admin.service import admin_service
+            admin_service.record_dataset_processed(
+                dataset_id=dataset_id,
+                filename=original_filename,
+                row_count=row_count,
+                column_count=len(columns),
+            )
+        except Exception as ex:
+            logger.warning(f"Admin telemetry recording failed for dataset upload: {ex}")
+
         logger.info(
             f"Registered dataset {dataset_id} for session {session_id[:12]}*** "
             f"({original_filename}, {row_count} rows, {len(columns)} cols)"
         )
         return record
+
 
 
     def get(self, dataset_id: str) -> Optional[DatasetRecord]:

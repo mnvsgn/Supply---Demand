@@ -219,9 +219,9 @@ class AdminService:
         m = self.repo.get_metrics()
         m["user_datasets_processed"] = m.get("user_datasets_processed", 0) + 1
         m["last_upload_time"] = now
-        m["operational_forecast_metrics"]["datasets_processed"] = (
-            m["operational_forecast_metrics"].get("datasets_processed", 0) + 1
-        )
+        op = m.get("operational_forecast_metrics", {})
+        op["datasets_processed"] = op.get("datasets_processed", 0) + 1
+        m["operational_forecast_metrics"] = op
         self.repo.save_metrics(m)
 
         self.repo.append_activity({

@@ -64,18 +64,6 @@ class UploadService:
 
         active_sid = record.session_id or ""
 
-        # Update admin telemetry
-        try:
-            from app.admin.service import admin_service
-            admin_service.record_dataset_processed(
-                dataset_id=record.dataset_id,
-                filename=record.original_filename,
-                row_count=record.row_count,
-                column_count=record.column_count,
-            )
-        except Exception:
-            pass
-
         response_obj = DatasetUploadResponse(
             dataset_id=record.dataset_id,
             filename=record.original_filename,
