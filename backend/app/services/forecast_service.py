@@ -2,8 +2,14 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 import pandas as pd
 from app.core.errors import NotFoundException, ValidationException
+from app.core.logging import logger
 from app.data_processing.preprocessing import preprocessing_pipeline
-from app.forecasting.base import BaseForecaster, ForecastResult
+from app.forecasting.base import (
+    BaseForecaster,
+    ForecastExecutionResult,
+    ForecastPoint,
+    ForecastResult,
+)
 from app.forecasting.naive import NaiveForecaster, SeasonalNaiveForecaster
 from app.forecasting.random_forest import RandomForestForecaster
 from app.forecasting.xgboost_model import XGBoostForecaster
@@ -169,17 +175,19 @@ class ForecastService:
                     winning_model=selection_res.selected_model_name,
                     metrics=selection_res.validation_metrics,
                 )
+                forecast_dict = result.to_dict()
+                forecast_points = forecast_dict.get("forecast", [])
                 admin_service.record_forecast_generated(
                     dataset_id=dataset_id,
                     model_name=result.model_name,
                     horizon=horizon,
                     target_level=target_level,
                     product_id=product_id,
-                    points_count=len(result.forecast),
-                    forecast_points=[p.to_dict() for p in result.forecast],
+                    points_count=len(forecast_points),
+                    forecast_points=forecast_points,
                 )
-            except Exception:
-                pass
+            except Exception as ex:
+                logger.warning(f"Admin telemetry recording failed: {ex}")
 
             return result
 
@@ -219,17 +227,19 @@ class ForecastService:
                         model_type=result.model_type,
                         metrics=result.metrics,
                     )
+                forecast_dict = result.to_dict()
+                forecast_points = forecast_dict.get("forecast", [])
                 admin_service.record_forecast_generated(
                     dataset_id=dataset_id,
                     model_name=result.model_name,
                     horizon=horizon,
                     target_level=target_level,
                     product_id=product_id,
-                    points_count=len(result.forecast),
-                    forecast_points=[p.to_dict() for p in result.forecast],
+                    points_count=len(forecast_points),
+                    forecast_points=forecast_points,
                 )
-            except Exception:
-                pass
+            except Exception as ex:
+                logger.warning(f"Admin telemetry recording failed: {ex}")
 
             return result
         except Exception as e:
@@ -397,6 +407,11 @@ class ForecastService:
             # In case of irregular intervals, preserve original data sorted
             data["demand"] = data["demand"].fillna(0.0)
             return data
+
+    # Convenience aliases for interface compatibility
+    forecast = generate_forecast
+    evaluate_models = evaluate_dataset
+
 
 
 # Global singleton

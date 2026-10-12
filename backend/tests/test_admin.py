@@ -239,3 +239,36 @@ def test_admin_authentication_and_route_protection():
     # Token must now be rejected
     res_after_logout = client.get("/api/v1/admin/dashboard", headers=headers)
     assert res_after_logout.status_code == 401
+
+
+def test_forecast_generation_updates_admin_metrics(monkeypatch, temp_admin_service):
+    """Verify that generating a forecast via forecast_service increments admin metrics."""
+    import pandas as pd
+    from app.services.forecast_service import forecast_service
+    import app.admin.service as admin_module
+
+    # Monkeypatch the singleton admin_service to use isolated temporary service
+    monkeypatch.setattr(admin_module, "admin_service", temp_admin_service)
+
+    metrics_before = temp_admin_service.repo.get_metrics()
+    assert metrics_before["total_forecasts_generated"] == 0
+
+    df = pd.DataFrame({
+        "date": pd.date_range("2023-01-01", periods=30, freq="D"),
+        "demand": [10.0 + i for i in range(30)],
+    })
+
+    result = forecast_service.generate_forecast(normalized_df=df, horizon=7, model_type="auto")
+    assert len(result.forecast) == 7
+    assert hasattr(result, "forecast")
+    assert result.forecast[0].to_dict()["predicted_demand"] > 0
+
+    metrics_after = temp_admin_service.repo.get_metrics()
+    assert metrics_after["total_forecasts_generated"] == 1
+    assert metrics_after["last_forecast_time"] is not None
+    assert metrics_after["operational_forecast_metrics"]["forecasts_generated"] == 1
+
+    events = temp_admin_service.repo.get_forecast_events()
+    assert len(events) == 1
+    assert events[0]["points_count"] == 7
+

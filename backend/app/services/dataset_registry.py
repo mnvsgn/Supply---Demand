@@ -199,6 +199,16 @@ class DatasetRegistry:
         session_manager.verify_dataset_ownership(session_id, dataset_id)
         return self.get(dataset_id)
 
+    def get_dataset(self, dataset_id: str, session_id: Optional[str] = None) -> Optional[DatasetRecord]:
+        """Convenience method returning dataset record with optional session validation."""
+        if session_id:
+            try:
+                return self.get_for_session(session_id, dataset_id)
+            except Exception:
+                return None
+        return self.get(dataset_id)
+
+
     def get_raw_dataframe(self, dataset_id: str) -> pd.DataFrame:
         """
         Retrieves the raw source DataFrame from memory cache or reloads from storage.

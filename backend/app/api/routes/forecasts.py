@@ -33,8 +33,8 @@ async def generate_forecast_standalone(
     if not record:
         raise NotFoundException(f"Dataset '{dataset_id}' not found or session has expired.")
 
-    result = forecast_service.forecast(
-        dataset_record=record,
+    result = forecast_service.generate_forecast(
+        dataset_id=dataset_id,
         model_type=payload.model_type,
         horizon=payload.horizon,
         target_level=payload.target_level,
@@ -48,18 +48,19 @@ async def generate_forecast_standalone(
     if record.session_id:
         response.headers["X-Session-ID"] = record.session_id
 
+    res_dict = result.to_dict()
     return ForecastResponse(
         dataset_id=dataset_id,
-        model_name=result.model_name,
-        model_type=result.model_type,
-        horizon=payload.horizon,
-        frequency=result.frequency,
-        forecast=[p.to_dict() for p in result.forecast],
-        feature_importance=result.feature_importance,
-        metrics=result.metrics,
-        model_comparison=result.model_comparison,
-        metadata=result.metadata,
-        warnings=result.warnings,
+        model_name=res_dict["model_name"],
+        model_type=res_dict["model_type"],
+        horizon=res_dict["horizon"],
+        frequency=res_dict["frequency"],
+        forecast=res_dict["forecast"],
+        feature_importance=res_dict.get("feature_importance"),
+        metrics=res_dict.get("metrics"),
+        model_comparison=res_dict.get("model_comparison"),
+        metadata=res_dict.get("metadata", {}),
+        warnings=res_dict.get("warnings", []),
     )
 
 
@@ -79,8 +80,8 @@ async def evaluate_models_standalone(
     if not record:
         raise NotFoundException(f"Dataset '{dataset_id}' not found or session has expired.")
 
-    result = forecast_service.evaluate_models(
-        dataset_record=record,
+    result = forecast_service.evaluate_dataset(
+        dataset_id=dataset_id,
         horizon=payload.horizon,
         target_level=payload.target_level,
         product_id=payload.product_id,
@@ -92,16 +93,17 @@ async def evaluate_models_standalone(
     if record.session_id:
         response.headers["X-Session-ID"] = record.session_id
 
+    res_dict = result.to_dict()
     return ModelEvaluationResponse(
         dataset_id=dataset_id,
-        target_level=result.target_level,
-        product_id=result.product_id,
-        primary_metric=result.primary_metric,
-        evaluation_mode=result.evaluation_mode,
-        selected_model_type=result.selected_model_type,
-        selected_model_name=result.selected_model_name,
-        comparison_table=result.comparison_table,
-        validation_period=result.validation_period,
-        validation_metrics=result.validation_metrics,
-        warnings=result.warnings,
+        target_level=payload.target_level,
+        product_id=payload.product_id,
+        primary_metric=payload.primary_metric,
+        evaluation_mode=res_dict.get("evaluation_mode", "chronological_split"),
+        selected_model_type=res_dict["selected_model_type"],
+        selected_model_name=res_dict["selected_model_name"],
+        comparison_table=res_dict["comparison_table"],
+        validation_period=res_dict["validation_period"],
+        validation_metrics=res_dict["validation_metrics"],
+        warnings=res_dict.get("warnings", []),
     )

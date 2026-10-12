@@ -503,6 +503,12 @@ def integrate_with_demandiq(all_benchmark_results):
                 model_type=m_key,
                 metrics={"wape": m_data["wape"], "mae": m_data["mae"], "rmse": m_data["rmse"]}
             )
+            admin_service.record_forecast_generated(
+                dataset_id=ds_name,
+                model_name=m_display,
+                horizon=horizon,
+                points_count=horizon,
+            )
 
             # Track best performance
             current_best = best_models[m_key]

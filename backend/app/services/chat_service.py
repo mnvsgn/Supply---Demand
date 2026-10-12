@@ -70,8 +70,8 @@ class ChatService:
             target_level = entities.get("target_level", "aggregate")
             product_id = entities.get("product_id")
 
-            result = forecast_service.forecast(
-                dataset_record=record,
+            result = forecast_service.generate_forecast(
+                dataset_id=dataset_id,
                 model_type=model_type,
                 horizon=horizon,
                 target_level=target_level,
@@ -79,10 +79,12 @@ class ChatService:
                 confidence_level=entities.get("service_level", 0.95),
             )
 
+            res_dict = result.to_dict()
+            forecast_rows = res_dict.get("forecast", [])
             msg = build_forecast_response_text(
                 model_name=result.model_name,
                 horizon=horizon,
-                points_count=len(result.forecast),
+                points_count=len(forecast_rows),
                 product_id=product_id,
             )
 
@@ -92,7 +94,7 @@ class ChatService:
                 "model_type": result.model_type,
                 "horizon": horizon,
                 "frequency": result.frequency,
-                "forecast": [p.to_dict() for p in result.forecast],
+                "forecast": forecast_rows,
                 "feature_importance": result.feature_importance,
                 "metrics": result.metrics,
                 "model_comparison": result.model_comparison,
@@ -117,29 +119,34 @@ class ChatService:
                 )
 
             horizon = entities.get("horizon", 14)
-            eval_res = forecast_service.evaluate_models(
-                dataset_record=record,
+            target_level = entities.get("target_level", "aggregate")
+            product_id = entities.get("product_id")
+            eval_res = forecast_service.evaluate_dataset(
+                dataset_id=dataset_id,
                 horizon=horizon,
+                target_level=target_level,
+                product_id=product_id,
                 primary_metric="wape",
             )
 
             msg = build_evaluation_response_text(
                 winning_model=eval_res.selected_model_name,
-                metric_name=eval_res.primary_metric,
+                metric_name=eval_res.primary_metric if hasattr(eval_res, "primary_metric") else "WAPE",
             )
 
+            eval_dict = eval_res.to_dict()
             payload = {
                 "dataset_id": dataset_id,
-                "target_level": eval_res.target_level,
-                "product_id": eval_res.product_id,
-                "primary_metric": eval_res.primary_metric,
-                "evaluation_mode": eval_res.evaluation_mode,
-                "selected_model_type": eval_res.selected_model_type,
-                "selected_model_name": eval_res.selected_model_name,
-                "comparison_table": eval_res.comparison_table,
-                "validation_period": eval_res.validation_period,
-                "validation_metrics": eval_res.validation_metrics,
-                "warnings": eval_res.warnings,
+                "target_level": target_level,
+                "product_id": product_id,
+                "primary_metric": "wape",
+                "evaluation_mode": eval_dict.get("evaluation_mode"),
+                "selected_model_type": eval_dict.get("selected_model_type"),
+                "selected_model_name": eval_dict.get("selected_model_name"),
+                "comparison_table": eval_dict.get("comparison_table"),
+                "validation_period": eval_dict.get("validation_period"),
+                "validation_metrics": eval_dict.get("validation_metrics"),
+                "warnings": eval_dict.get("warnings"),
             }
 
             return ChatResponse(
@@ -148,6 +155,7 @@ class ChatService:
                 data=payload,
                 intent=intent,
             )
+
 
         elif intent == "data_quality" and dataset_id:
             record = dataset_registry.get_dataset(dataset_id, session_id=session_id)

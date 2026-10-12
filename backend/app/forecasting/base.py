@@ -5,6 +5,12 @@ import numpy as np
 import pandas as pd
 
 
+class ForecastPoint(dict):
+    """Dictionary representing a single forecast point with .to_dict() compatibility."""
+    def to_dict(self) -> Dict[str, Any]:
+        return dict(self)
+
+
 @dataclass
 class ForecastResult:
     """Standardized output container for time-series forecast models."""
@@ -19,6 +25,11 @@ class ForecastResult:
     metadata: Dict[str, Any] = field(default_factory=dict)
     warnings: List[str] = field(default_factory=list)
 
+    @property
+    def forecast(self) -> List[Dict[str, Any]]:
+        """List of forecast points for convenient property access."""
+        return self.to_dict()["forecast"]
+
     def to_dict(self) -> Dict[str, Any]:
         """Converts result to JSON-serializable dictionary."""
         records = []
@@ -29,12 +40,12 @@ class ForecastResult:
                 if isinstance(date_val, (pd.Timestamp, pd.Period))
                 else str(date_val)
             )
-            records.append({
+            records.append(ForecastPoint({
                 "date": date_str,
                 "predicted_demand": round(float(row["predicted_demand"]), 2),
                 "lower_bound": round(float(row.get("lower_bound", row["predicted_demand"])), 2),
                 "upper_bound": round(float(row.get("upper_bound", row["predicted_demand"])), 2),
-            })
+            }))
 
         return {
             "model_name": self.model_name,
@@ -50,7 +61,12 @@ class ForecastResult:
         }
 
 
+# Type alias for backwards compatibility
+ForecastExecutionResult = ForecastResult
+
+
 class BaseForecaster(ABC):
+
     """Abstract base class establishing the forecasting model contract."""
 
     def __init__(self, model_name: str, model_type: str):
