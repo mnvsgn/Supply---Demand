@@ -160,35 +160,6 @@ The frontend application will be accessible at `http://localhost:5173`.
 cd backend
 pytest -v
 ```
-
----
-
-## 🛡️ Administrative Portal (`/admin`)
-
-The application includes an administrative telemetry and auditing portal with zero database dependencies, persisting metrics to synchronized JSON files.
-
-### Access & Credentials
-- **Admin URLs**:
-  - `/admin` — High-Level Telemetry Dashboard
-  - `/admin/performance` — 3-Section Model Performance (Training, Operational Accuracy, Benchmarks)
-  - `/admin/info` — Runtime System Telemetry & Library Specifications
-  - `/admin/login` — Administrator Authentication Form
-- **Default Credentials** (Configured in `backend/.env`):
-  - **Username**: `admin`
-  - **Password**: `demandiq_admin_2026`
-
-### JSON Storage Architecture & Limitations
-Admin telemetry and activity history are stored in `backend/data/admin/`:
-- `metrics.json`: Aggregated counters, training totals, and algorithm statuses.
-- `training_runs.json`: Detailed logs for training events and backtests.
-- `forecast_events.json`: Historical forecast events and prediction points for ground-truth verification.
-- `activity.json`: Chronological audit log of uploads, training, evaluations, and forecasts.
-
-> [!NOTE]
-> **Single-Instance Suitability**: The JSON-file persistence layer uses atomic file replaces (`os.replace`) and thread synchronization (`RLock`) to guarantee file integrity without corruption.
->
-> **Production Limitations**: This architecture is designed for local, educational, and single-instance server execution. In a horizontally scaled, multi-worker production cluster, concurrent file access across multiple OS processes/machines would require a centralized database (such as PostgreSQL) with distributed locking.
-
 ---
 
 ## 🔒 Security & Privacy Notice
