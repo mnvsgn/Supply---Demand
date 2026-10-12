@@ -14,9 +14,9 @@ def build_forecast_response_text(
     """Build narrative text accompanying forecast outputs."""
     target_str = f"for SKU **{product_id}**" if product_id else "for aggregate total demand"
     return (
-        f"Forecasting completed {target_str} across the next **{points_count} periods**.\n"
-        f"The winning algorithm selected via out-of-sample chronological backtesting is **{model_name}**.\n"
-        "Inspect the trajectory chart and projection table below:"
+        f"Demand projections generated {target_str} across the next **{points_count} periods**.\n"
+        "Our predictive engine analyzed your historical demand patterns, seasonal cycles, and run-rates to generate this planning outlook.\n"
+        "Review the projected trajectory, peak demand periods, and planning schedule below:"
     )
 
 
@@ -26,9 +26,9 @@ def build_evaluation_response_text(
 ) -> str:
     """Build narrative text accompanying model evaluation results."""
     return (
-        "Model evaluation complete! Backtested all candidates on the chronological validation split.\n"
-        f"The top-performing model is **{winning_model}** based on lowest **{metric_name.upper()}** error. "
-        "Compare the evaluation metrics table below:"
+        "Forecasting methodology evaluation complete! We analyzed candidate approaches against your historical demand.\n"
+        f"The recommended forecasting method is **{winning_model}**, providing the highest historical reliability and lowest planning variance. "
+        "Review the comparison table below:"
     )
 
 

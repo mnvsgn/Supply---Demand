@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { useChat } from '../../context/ChatContext';
 import MessageItem from './MessageItem';
 import WelcomeScreen from './WelcomeScreen';
-import ClaudeThinkingIndicator from './ClaudeThinkingIndicator';
+import ThinkingIndicator from './ThinkingIndicator';
 
 export default function MessageList() {
   const {
@@ -35,7 +35,7 @@ export default function MessageList() {
 
         {/* Claude-style Generating / Cooking / Thinking indicator */}
         {isBusy && (
-          <ClaudeThinkingIndicator
+          <ThinkingIndicator
             isUploading={isUploading}
             isForecasting={isForecasting}
             isEvaluating={isEvaluating}

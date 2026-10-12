@@ -3,7 +3,6 @@ import { useChat } from '../../context/ChatContext';
 import {
   TrendingUp,
   Table as TableIcon,
-  Trophy,
   Sliders,
   Sparkles,
   BarChart2,
@@ -13,19 +12,17 @@ import {
 } from 'lucide-react';
 import ForecastChart from './ForecastChart';
 import ForecastTable from './ForecastTable';
-import ModelComparisonTable from './ModelComparisonTable';
-import { formatNumber, formatPercentage } from '../../utils/formatters';
+import { formatNumber, formatPercentage, formatBusinessModelName } from '../../utils/formatters';
 
 export default function ForecastResultCard({ forecastResult }) {
   const { runForecast, isForecasting, sessionId, activeDataset } = useChat();
-  const [activeTab, setActiveTab] = useState('chart'); // 'chart' | 'table' | 'models' | 'features'
+  const [activeTab, setActiveTab] = useState('chart'); // 'chart' | 'table' | 'features'
 
   const forecastRows = forecastResult?.forecast || [];
   const modelName = forecastResult?.model_name || 'Forecast Engine';
   const horizon = forecastResult?.horizon || forecastRows.length;
   const frequency = forecastResult?.frequency || 'D';
   const metrics = forecastResult?.metrics || {};
-  const modelComparison = forecastResult?.model_comparison || [];
   const featureImportance = forecastResult?.feature_importance || null;
   const warnings = forecastResult?.warnings || [];
   const recentHistory = forecastResult?.metadata?.recent_history || [];
@@ -53,14 +50,14 @@ export default function ForecastResultCard({ forecastResult }) {
           <div>
             <div className="flex items-center space-x-2">
               <h3 className="text-sm font-semibold text-white tracking-tight">
-                {modelName}
+                {formatBusinessModelName(modelName)}
               </h3>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#193228] text-emerald-400 border border-[#234b3c]">
                 {horizon} Periods ({frequency})
               </span>
             </div>
             <p className="text-xs text-neutral-400 mt-0.5">
-              Out-of-sample multi-step demand projection with 95% uncertainty intervals.
+              Forward-looking customer demand projections with 95% planning intervals.
             </p>
           </div>
         </div>
@@ -95,11 +92,11 @@ export default function ForecastResultCard({ forecastResult }) {
         </div>
 
         <div className="p-3 rounded-xl bg-[#141414] border border-[#262626]">
-          <span className="text-[10px] uppercase font-semibold text-neutral-400 block">Average Demand / Period</span>
+          <span className="text-[10px] uppercase font-semibold text-neutral-400 block">Average Run-Rate</span>
           <span className="text-base sm:text-lg font-bold font-mono text-neutral-200">
             {formatNumber(avgPredicted, 1)}
           </span>
-          <span className="text-[10px] text-neutral-500 block">expected daily run-rate</span>
+          <span className="text-[10px] text-neutral-500 block">expected daily demand</span>
         </div>
 
         <div className="p-3 rounded-xl bg-[#141414] border border-[#262626]">
@@ -111,13 +108,13 @@ export default function ForecastResultCard({ forecastResult }) {
         </div>
 
         <div className="p-3 rounded-xl bg-[#141414] border border-[#262626]">
-          <span className="text-[10px] uppercase font-semibold text-neutral-400 block">Validation WAPE</span>
+          <span className="text-[10px] uppercase font-semibold text-neutral-400 block">Forecast Reliability</span>
           <span className="text-base sm:text-lg font-bold font-mono text-emerald-400">
             {metrics.wape !== null && metrics.wape !== undefined
-              ? formatPercentage(metrics.wape)
-              : 'Baseline'}
+              ? `${Math.max(0, Math.min(100, Math.round((1 - metrics.wape) * 100)))}%`
+              : 'High Reliability'}
           </span>
-          <span className="text-[10px] text-neutral-500 block">weighted absolute error</span>
+          <span className="text-[10px] text-neutral-500 block">historical accuracy rating</span>
         </div>
       </div>
 
@@ -126,7 +123,7 @@ export default function ForecastResultCard({ forecastResult }) {
         <div className="rounded-xl bg-amber-950/20 border border-amber-800/30 p-3 text-xs text-amber-300 flex items-start space-x-2">
           <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
           <div className="space-y-0.5">
-            <span className="font-semibold block">Forecast Engine Notices:</span>
+            <span className="font-semibold block">Planning Considerations:</span>
             <ul className="list-disc list-inside text-[11px] text-amber-200/80">
               {warnings.map((w, idx) => (
                 <li key={idx}>{w}</li>
@@ -159,34 +156,20 @@ export default function ForecastResultCard({ forecastResult }) {
           }`}
         >
           <TableIcon className="w-3.5 h-3.5" />
-          <span>Forecast Table</span>
+          <span>Demand Schedule</span>
         </button>
-
-        {modelComparison.length > 0 && (
-          <button
-            onClick={() => setActiveTab('models')}
-            className={`flex items-center space-x-1.5 py-2 px-3 border-b-2 font-medium transition-colors cursor-pointer ${
-              activeTab === 'models'
-                ? 'border-emerald-400 text-emerald-400'
-                : 'border-transparent text-neutral-400 hover:text-neutral-200'
-            }`}
-          >
-            <Trophy className="w-3.5 h-3.5" />
-            <span>Model Comparison</span>
-          </button>
-        )}
 
         {featureImportance && Object.keys(featureImportance).length > 0 && (
           <button
             onClick={() => setActiveTab('features')}
-            className={`flex items-center space-x-1.5 py-2 px-3 border-b-2 font-medium transition-colors ${
+            className={`flex items-center space-x-1.5 py-2 px-3 border-b-2 font-medium transition-colors cursor-pointer ${
               activeTab === 'features'
-                ? 'border-blue-500 text-blue-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-emerald-400 text-emerald-400'
+                : 'border-transparent text-neutral-400 hover:text-neutral-200'
             }`}
           >
             <Sliders className="w-3.5 h-3.5" />
-            <span>Feature Importance</span>
+            <span>Key Demand Drivers</span>
           </button>
         )}
       </div>
@@ -216,13 +199,6 @@ export default function ForecastResultCard({ forecastResult }) {
               frequency,
               datasetName: activeDataset?.filename,
             }}
-          />
-        )}
-
-        {activeTab === 'models' && (
-          <ModelComparisonTable
-            comparison={modelComparison}
-            primaryMetric={forecastResult?.metadata?.selection_metric || 'wape'}
           />
         )}
 

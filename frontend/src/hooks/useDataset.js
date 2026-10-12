@@ -55,9 +55,10 @@ export function useDataset() {
       const res = await api.updateDatasetMapping(datasetId, mappingData, sessionId, { signal });
       
       setActiveDataset(prev => {
-        if (!prev || prev.dataset_id !== datasetId) return prev;
+        const base = prev && prev.dataset_id === datasetId ? prev : (prev || {});
         return {
-          ...prev,
+          ...base,
+          dataset_id: datasetId,
           is_mapped: true,
           mapped_schema: res.mapped_schema,
           data_quality: res.data_quality,

@@ -43,8 +43,8 @@ export default function ForecastChart({
   const chartData = useMemo(() => {
     const combined = [];
 
-    // 1. Add historical points if available
-    if (recentHistory && recentHistory.length > 0) {
+    // 1. Add historical points ONLY IF showHistorical is TRUE
+    if (showHistorical && recentHistory && recentHistory.length > 0) {
       recentHistory.forEach((pt) => {
         combined.push({
           date: pt.date,
@@ -73,7 +73,33 @@ export default function ForecastChart({
     }
 
     return combined;
-  }, [recentHistory, forecastRows, hasValidIntervals]);
+  }, [showHistorical, recentHistory, forecastRows, hasValidIntervals]);
+
+  // Dynamic Y-axis domain calculation ensuring points never hug the chart ceiling
+  const yDomain = useMemo(() => {
+    if (!chartData || chartData.length === 0) return [0, 'auto'];
+
+    const values = [];
+    chartData.forEach((d) => {
+      if (d.actual !== null && d.actual !== undefined) values.push(Number(d.actual));
+      if (d.predicted !== null && d.predicted !== undefined) values.push(Number(d.predicted));
+      if (showBounds && d.upper !== null && d.upper !== undefined) values.push(Number(d.upper));
+      if (showBounds && d.lower !== null && d.lower !== undefined) values.push(Number(d.lower));
+    });
+
+    if (values.length === 0) return [0, 'auto'];
+
+    const minVal = Math.min(...values);
+    const maxVal = Math.max(...values);
+    const span = maxVal - minVal;
+
+    // Minimum padding to guarantee vertical headroom & footroom
+    const padding = Math.max(span * 0.15, maxVal * 0.08, 5);
+    const lowerBound = Math.max(0, Math.floor(minVal - padding));
+    const upperBound = Math.ceil(maxVal + padding);
+
+    return [lowerBound, upperBound];
+  }, [chartData, showBounds]);
 
   // First forecast date for vertical demarcation line
   const forecastStartDate = forecastRows?.[0]?.date;
@@ -182,17 +208,21 @@ export default function ForecastChart({
 
       {/* Chart Toolbar Controls */}
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-        <div className="flex items-center space-x-3 text-slate-400">
-          <div className="flex items-center space-x-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block" />
-            <span className="text-slate-300">Historical Observations</span>
-          </div>
+        <div className="flex items-center space-x-3 text-neutral-400">
+          {recentHistory.length > 0 && (
+            <div className={`flex items-center space-x-1.5 transition-opacity ${showHistorical ? 'opacity-100' : 'opacity-40'}`}>
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block" />
+              <span className={`text-neutral-300 ${!showHistorical ? 'line-through text-neutral-500' : ''}`}>
+                Historical Observations
+              </span>
+            </div>
+          )}
           <div className="flex items-center space-x-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" />
-            <span className="text-slate-300">Predicted Horizon</span>
+            <span className="text-neutral-300">Predicted Horizon</span>
           </div>
           {hasValidIntervals && showBounds && (
-            <div className="flex items-center space-x-1.5 text-slate-400">
+            <div className="flex items-center space-x-1.5 text-neutral-400">
               <span className="w-2.5 h-2.5 rounded border border-blue-400/40 bg-blue-500/10 inline-block" />
               <span>95% Bounds</span>
             </div>
@@ -203,9 +233,13 @@ export default function ForecastChart({
           {recentHistory.length > 0 && (
             <button
               onClick={() => setShowHistorical(!showHistorical)}
-              className="flex items-center space-x-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] border border-slate-700/60 transition-colors"
+              className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[11px] border transition-colors cursor-pointer ${
+                showHistorical
+                  ? 'bg-[#222222] hover:bg-[#282828] text-neutral-200 border-[#333333]'
+                  : 'bg-[#181818] hover:bg-[#222222] text-neutral-400 border-[#2a2a2a]'
+              }`}
             >
-              {showHistorical ? <Eye className="w-3 h-3 text-emerald-400" /> : <EyeOff className="w-3 h-3 text-slate-500" />}
+              {showHistorical ? <Eye className="w-3 h-3 text-emerald-400" /> : <EyeOff className="w-3 h-3 text-neutral-500" />}
               <span>{showHistorical ? 'Hide History' : 'Show History'}</span>
             </button>
           )}
@@ -213,9 +247,13 @@ export default function ForecastChart({
           {hasValidIntervals && (
             <button
               onClick={() => setShowBounds(!showBounds)}
-              className="flex items-center space-x-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] border border-slate-700/60 transition-colors"
+              className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[11px] border transition-colors cursor-pointer ${
+                showBounds
+                  ? 'bg-[#222222] hover:bg-[#282828] text-neutral-200 border-[#333333]'
+                  : 'bg-[#181818] hover:bg-[#222222] text-neutral-400 border-[#2a2a2a]'
+              }`}
             >
-              {showBounds ? <Eye className="w-3 h-3 text-blue-400" /> : <EyeOff className="w-3 h-3 text-slate-500" />}
+              {showBounds ? <Eye className="w-3 h-3 text-blue-400" /> : <EyeOff className="w-3 h-3 text-neutral-500" />}
               <span>{showBounds ? 'Hide Bounds' : 'Show Bounds'}</span>
             </button>
           )}
@@ -223,11 +261,12 @@ export default function ForecastChart({
       </div>
 
       {/* Main Responsive Recharts View */}
-      <div className="h-72 sm:h-80 w-full rounded-xl bg-slate-950/70 border border-slate-800/80 p-3">
+      <div className="h-72 sm:h-80 w-full rounded-xl bg-[#141414] border border-[#262626] p-3">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
+            key={showHistorical ? 'with-history' : 'forecast-only'}
             data={chartData}
-            margin={{ top: 10, right: 15, left: -15, bottom: 0 }}
+            margin={{ top: 20, right: 20, left: -10, bottom: 5 }}
           >
             <defs>
               <linearGradient id="actualGradient" x1="0" y1="0" x2="0" y2="1">
@@ -236,11 +275,11 @@ export default function ForecastChart({
               </linearGradient>
             </defs>
 
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#262626" vertical={false} />
 
             <XAxis
               dataKey="date"
-              stroke="#64748b"
+              stroke="#737373"
               fontSize={11}
               tickLine={false}
               tickFormatter={(d) => {
@@ -251,25 +290,30 @@ export default function ForecastChart({
             />
 
             <YAxis
-              stroke="#64748b"
+              stroke="#737373"
               fontSize={11}
               tickLine={false}
+              domain={yDomain}
               tickFormatter={(v) => Number(v).toLocaleString()}
             />
 
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip
+              cursor={{ stroke: '#333333', strokeWidth: 1, strokeDasharray: '3 3' }}
+              content={<CustomTooltip />}
+            />
 
             {/* Demarcation line separating historical from forecast horizon */}
-            {forecastStartDate && (
+            {showHistorical && forecastStartDate && recentHistory.length > 0 && (
               <ReferenceLine
                 x={forecastStartDate}
                 stroke="#6366f1"
                 strokeDasharray="4 4"
                 label={{
                   value: 'Forecast Start',
-                  position: 'top',
-                  fill: '#818cf8',
+                  position: 'insideTopLeft',
+                  fill: '#a5b4fc',
                   fontSize: 10,
+                  offset: 8,
                 }}
               />
             )}

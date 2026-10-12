@@ -4,23 +4,23 @@ import { Bot, Sparkles, Flame, Cpu } from 'lucide-react';
 const PHRASES = {
   forecast: [
     'Thinking...',
-    'Inspecting historical demand...',
-    'Cooking up time-series features...',
-    'Fitting Random Forest & XGBoost...',
-    'Calculating prediction intervals...',
-    'Generating forecast...',
+    'Inspecting historical sales patterns...',
+    'Cooking demand projections...',
+    'Calibrating seasonal patterns & trends...',
+    'Calculating 95% planning intervals...',
+    'Generating demand forecast...',
   ],
   evaluate: [
     'Thinking...',
-    'Benchmarking model accuracy...',
-    'Executing chronological backtest...',
-    'Cooking MAE, RMSE & WAPE metrics...',
-    'Generating model comparison...',
+    'Evaluating historical accuracy...',
+    'Benchmarking prediction methods...',
+    'Cooking reliability ratings...',
+    'Generating comparison report...',
   ],
   analytics: [
     'Thinking...',
     'Analyzing sales velocity...',
-    'Cooking seasonality indices & rankings...',
+    'Cooking seasonality & product rankings...',
     'Calculating safety stock requirements...',
     'Generating business analytics...',
   ],
@@ -39,7 +39,7 @@ const PHRASES = {
   ],
 };
 
-export default function ClaudeThinkingIndicator({
+export default function ThinkingIndicator({
   isUploading,
   isForecasting,
   isEvaluating,

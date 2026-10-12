@@ -55,16 +55,6 @@ export default function Sidebar({ isOpen, onToggle, onClose }) {
       prompt: 'Show sales trends, seasonality and safety stock for 7 days lead time',
     },
     {
-      title: 'Compare all ML models',
-      desc: 'Benchmark Naive, RF & XGBoost on WAPE',
-      prompt: 'Compare Naive, Random Forest, and XGBoost models on WAPE',
-    },
-    {
-      title: 'Check dataset quality',
-      desc: 'Inspect gaps, negative values & nulls',
-      prompt: 'Check dataset quality and missing date gaps',
-    },
-    {
       title: 'Forecast next 30 days',
       desc: 'Extended monthly horizon with XGBoost',
       prompt: 'Forecast demand for the next 30 days using XGBoost',

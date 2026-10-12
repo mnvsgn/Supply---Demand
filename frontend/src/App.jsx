@@ -6,6 +6,7 @@ import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminPerformancePage from './pages/admin/AdminPerformancePage';
 import AdminSystemInfoPage from './pages/admin/AdminSystemInfoPage';
 import AdminLoginPage from './pages/admin/AdminLoginPage';
+import ErrorBoundary from './components/common/ErrorBoundary';
 
 function RouteSwitch() {
   const { currentPath } = useRouter();
@@ -36,8 +37,10 @@ function RouteSwitch() {
 
 export default function App() {
   return (
-    <RouterProvider>
-      <RouteSwitch />
-    </RouterProvider>
+    <ErrorBoundary>
+      <RouterProvider>
+        <RouteSwitch />
+      </RouterProvider>
+    </ErrorBoundary>
   );
 }

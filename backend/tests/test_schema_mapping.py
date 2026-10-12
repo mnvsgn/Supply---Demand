@@ -335,3 +335,21 @@ def test_preprocessing_aggregate_and_product_series():
     assert len(p1_series) == 2
     assert p1_series.loc[p1_series["date"] == pd.Timestamp("2023-01-01"), "demand"].values[0] == 10.0
     assert p1_series.loc[p1_series["date"] == pd.Timestamp("2023-01-02"), "demand"].values[0] == 15.0
+
+
+def test_dataset_mapping_alias_support():
+    """Verify that mapping request accepts 'date' and 'demand' aliases seamlessly."""
+    upload_res = client.post(
+        "/api/v1/datasets/upload",
+        files={"file": ("test.csv", b"date,demand\n2023-01-01,10\n2023-01-02,20\n", "text/csv")},
+    )
+    assert upload_res.status_code == 201
+    dataset_id = upload_res.json()["dataset_id"]
+
+    # Post using aliases 'date' and 'demand' rather than 'date_column' and 'demand_column'
+    alias_payload = {"date": "date", "demand": "demand"}
+    res = client.post(f"/api/v1/datasets/{dataset_id}/mapping", json=alias_payload)
+    assert res.status_code == 200
+    assert res.json()["is_valid"] is True
+    assert res.json()["mapped_schema"]["date"] == "date"
+    assert res.json()["mapped_schema"]["demand"] == "demand"

@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class DatasetUploadResponse(BaseModel):
@@ -68,6 +68,25 @@ class DatasetMappingRequest(BaseModel):
     aggregation_frequency: Optional[str] = Field(
         default=None, description="Optional manual frequency override ('D', 'W', 'M', or 'auto')"
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def resolve_aliases_and_keys(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            # Resolve canonical role aliases (e.g., date -> date_column, demand -> demand_column)
+            if not data.get("date_column") and data.get("date"):
+                data["date_column"] = data["date"]
+            if not data.get("demand_column") and data.get("demand"):
+                data["demand_column"] = data["demand"]
+            if not data.get("product_id_column") and data.get("product_id"):
+                data["product_id_column"] = data["product_id"]
+            if not data.get("store_id_column") and data.get("store_id"):
+                data["store_id_column"] = data["store_id"]
+            if not data.get("price_column") and data.get("price"):
+                data["price_column"] = data["price"]
+            if not data.get("promotion_column") and data.get("promotion"):
+                data["promotion_column"] = data["promotion"]
+        return data
 
 
 class DatasetMappingResponse(BaseModel):

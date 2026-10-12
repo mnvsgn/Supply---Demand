@@ -27,14 +27,29 @@ async function request(endpoint, options = {}) {
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {
-      let errorMsg = `HTTP Error ${response.status}`;
+      let errorMsg =
+        response.status >= 500
+          ? 'Internal Server Error: The service encountered a problem. Please try again shortly.'
+          : `Request Error (${response.status})`;
       let detail = null;
-      let errorCode = 'API_ERROR';
+      let errorCode = response.status >= 500 ? 'INTERNAL_SERVER_ERROR' : `HTTP_${response.status}`;
 
       if (data) {
-        errorMsg = data.message || data.error || (typeof data.detail === 'string' ? data.detail : null) || errorMsg;
+        if (Array.isArray(data.detail)) {
+          // Pydantic validation error array
+          const missingFields = data.detail
+            .filter((d) => d.type === 'missing')
+            .map((d) => (Array.isArray(d.loc) ? d.loc[d.loc.length - 1] : d.loc));
+          if (missingFields.length > 0) {
+            errorMsg = `Please specify required columns: ${missingFields.join(', ')}.`;
+          } else {
+            errorMsg = data.detail.map((d) => d.msg || 'Invalid field').join('; ');
+          }
+        } else {
+          errorMsg = data.message || data.error || (typeof data.detail === 'string' ? data.detail : null) || errorMsg;
+        }
         detail = data.detail || null;
-        errorCode = data.code || `HTTP_${response.status}`;
+        errorCode = data.code || errorCode;
       }
 
       const err = new Error(errorMsg);
@@ -51,9 +66,9 @@ async function request(endpoint, options = {}) {
       throw error;
     }
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
-      const connErr = new Error('Cannot connect to backend server. Please verify FastAPI is running at http://localhost:8000.');
-      connErr.code = 'BACKEND_DISCONNECTED';
-      connErr.status = 0;
+      const connErr = new Error('Internal Server Error: Unable to connect to backend server. Please try again in a few moments.');
+      connErr.code = 'INTERNAL_SERVER_ERROR';
+      connErr.status = 503;
       throw connErr;
     }
     throw error;

@@ -90,13 +90,6 @@ export default function ModelComparisonTable({ comparison = [], primaryMetric = 
           </tbody>
         </table>
       </div>
-
-      <div className="flex items-center justify-between text-[11px] text-slate-500 px-1">
-        <span>
-          * Selection based strictly on validation split with zero test-set leakage.
-        </span>
-        <span className="uppercase font-mono">Ranking Metric: {primaryMetric}</span>
-      </div>
     </div>
   );
 }
