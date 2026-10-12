@@ -45,13 +45,15 @@ export default function ForecastChart({
 
     // 1. Add historical points ONLY IF showHistorical is TRUE
     if (showHistorical && recentHistory && recentHistory.length > 0) {
-      recentHistory.forEach((pt) => {
+      const histLen = recentHistory.length;
+      recentHistory.forEach((pt, idx) => {
+        const isLastHist = idx === histLen - 1;
         combined.push({
           date: pt.date,
           actual: pt.demand,
-          predicted: null,
-          lower: null,
-          upper: null,
+          predicted: isLastHist && forecastRows?.length > 0 ? pt.demand : null,
+          lower: isLastHist && forecastRows?.length > 0 && hasValidIntervals ? pt.demand : null,
+          upper: isLastHist && forecastRows?.length > 0 && hasValidIntervals ? pt.demand : null,
           type: 'history',
         });
       });
@@ -142,13 +144,13 @@ export default function ForecastChart({
           </div>
         )}
 
-        {dataPt?.predicted !== null && dataPt?.predicted !== undefined && (
-          <div className="flex items-center justify-between text-emerald-400">
+        {dataPt?.predicted !== null && dataPt?.predicted !== undefined && isForecast && (
+          <div className="flex items-center justify-between text-blue-400">
             <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
+              <span className="w-2 h-2 rounded-full bg-blue-400 inline-block" />
               Predicted Demand:
             </span>
-            <span className="font-mono font-bold text-emerald-300">{formatNumber(dataPt.predicted)} {units}</span>
+            <span className="font-mono font-bold text-blue-300">{formatNumber(dataPt.predicted)} {units}</span>
           </div>
         )}
 

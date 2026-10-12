@@ -7,6 +7,103 @@ import re
 from typing import Dict, Any, Optional
 
 
+WORD_NUMBERS = {
+    "one": 1,
+    "two": 2,
+    "three": 3,
+    "four": 4,
+    "five": 5,
+    "six": 6,
+    "seven": 7,
+    "eight": 8,
+    "nine": 9,
+    "ten": 10,
+    "eleven": 11,
+    "twelve": 12,
+    "thirteen": 13,
+    "fourteen": 14,
+    "fifteen": 15,
+    "twenty": 20,
+    "thirty": 30,
+    "sixty": 60,
+    "ninety": 90,
+}
+
+
+def extract_horizon(prompt: str, default_horizon: int = 14) -> int:
+    """
+    Accurately extracts forecast horizons from user prompts:
+    - "next day", "tomorrow", "1 day", "1d" -> 1
+    - "next week", "1 week", "7d" -> 7
+    - "next 2 weeks", "two weeks" -> 14
+    - "next month", "1 month", "30d" -> 30
+    - "next quarter" -> 90
+    - "next year" -> 365
+    - word numbers ("three days", "five days")
+    - arbitrary numeric days ("next 3 days", "10 days", "horizon 5")
+    """
+    if not prompt or not isinstance(prompt, str):
+        return default_horizon
+
+    p = prompt.lower().strip()
+
+    # 1. Tomorrow / Single day / Next day
+    if re.search(r'\b(tomorrow|next\s+day|following\s+day|single\s+day|one\s+day|1\s*day)\b', p):
+        return 1
+
+    # 2. Single week / Next week
+    if re.search(r'\b(next\s+week|coming\s+week|one\s+week|1\s*week)\b', p):
+        return 7
+
+    # 3. Single month / Next month
+    if re.search(r'\b(next\s+month|coming\s+month|one\s+month|1\s*month)\b', p):
+        return 30
+
+    # 4. Next quarter
+    if re.search(r'\b(next\s+quarter|coming\s+quarter|one\s+quarter|1\s*quarter)\b', p):
+        return 90
+
+    # 5. Next year
+    if re.search(r'\b(next\s+year|coming\s+year|one\s+year|1\s*year)\b', p):
+        return 365
+
+    # 6. Numeric with explicit units (e.g. "30days", "30 days", "2 weeks", "3 months", "7d", "14d")
+    num_match = re.search(r'(\d+)\s*[-]?\s*(days?|periods?|weeks?|months?|quarters?|years?|d\b|w\b|m\b)', p)
+    if num_match:
+        val = int(num_match.group(1))
+        unit = num_match.group(2).lower()
+        if unit.startswith('w'):
+            return max(1, min(val * 7, 365))
+        elif unit.startswith('m'):
+            return max(1, min(val * 30, 365))
+        elif unit.startswith('q'):
+            return max(1, min(val * 90, 365))
+        elif unit.startswith('y'):
+            return max(1, min(val * 365, 365))
+        else:
+            return max(1, min(val, 365))
+
+    # 7. Word numbers with units (e.g. "three days", "two weeks")
+    word_pattern = '|'.join(WORD_NUMBERS.keys())
+    word_match = re.search(rf'\b({word_pattern})\s*[-]?\s*(days?|periods?|weeks?|months?)', p)
+    if word_match:
+        val = WORD_NUMBERS[word_match.group(1)]
+        unit = word_match.group(2).lower()
+        if 'week' in unit:
+            return max(1, min(val * 7, 365))
+        elif 'month' in unit:
+            return max(1, min(val * 30, 365))
+        else:
+            return max(1, min(val, 365))
+
+    # 8. General explicit horizon phrasing (e.g. "horizon of 5", "predict 10")
+    horizon_match = re.search(r'\b(?:horizon|for|periods?)\s*(?:of)?\s*(\d+)\b', p)
+    if horizon_match:
+        return max(1, min(int(horizon_match.group(1)), 365))
+
+    return default_horizon
+
+
 def interpret_prompt(prompt: str) -> Dict[str, Any]:
     """
     Extracts structured forecasting and analytics arguments from a user prompt.
@@ -14,19 +111,8 @@ def interpret_prompt(prompt: str) -> Dict[str, Any]:
     p = prompt.lower().strip()
     entities: Dict[str, Any] = {}
 
-    # 1. Horizon extraction (e.g., '14 days', '30 periods', '4 weeks', '2 months')
-    horizon_match = re.search(r'(\d+)\s*(days?|periods?|weeks?|months?)', p)
-    if horizon_match:
-        val = int(horizon_match.group(1))
-        unit = horizon_match.group(2)
-        if "week" in unit:
-            entities["horizon"] = val * 7
-        elif "month" in unit:
-            entities["horizon"] = val * 30
-        else:
-            entities["horizon"] = val
-    else:
-        entities["horizon"] = 14
+    # 1. Horizon extraction
+    entities["horizon"] = extract_horizon(p, default_horizon=14)
 
     # 2. Model type selection
     if "xgboost" in p:

@@ -53,7 +53,7 @@ export default function ForecastResultCard({ forecastResult }) {
                 {formatBusinessModelName(modelName)}
               </h3>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#193228] text-emerald-400 border border-[#234b3c]">
-                {horizon} Periods ({frequency})
+                {horizon} {horizon === 1 ? 'Period' : 'Periods'} ({frequency})
               </span>
             </div>
             <p className="text-xs text-neutral-400 mt-0.5">
@@ -64,7 +64,7 @@ export default function ForecastResultCard({ forecastResult }) {
 
         {/* Quick Horizon Buttons */}
         <div className="flex items-center space-x-1.5 self-start sm:self-auto">
-          {[7, 14, 30].map((h) => (
+          {Array.from(new Set([1, 7, 14, 30, horizon])).filter(Boolean).sort((a, b) => a - b).map((h) => (
             <button
               key={h}
               onClick={() => runForecast({ horizon: h, model_type: 'auto' })}
@@ -88,7 +88,7 @@ export default function ForecastResultCard({ forecastResult }) {
           <span className="text-base sm:text-lg font-bold font-mono text-emerald-400">
             {formatNumber(totalPredicted, 0)}
           </span>
-          <span className="text-[10px] text-neutral-500 block">across {horizon} periods</span>
+          <span className="text-[10px] text-neutral-500 block">across {horizon} {horizon === 1 ? 'period' : 'periods'}</span>
         </div>
 
         <div className="p-3 rounded-xl bg-[#141414] border border-[#262626]">

@@ -177,3 +177,114 @@ export function formatAccuracyRate(wape) {
   return `${accuracy}% Historical Accuracy`;
 }
 
+/**
+ * Word to numeric mapping for English numbers
+ */
+const WORD_NUMBERS = {
+  one: 1,
+  two: 2,
+  three: 3,
+  four: 4,
+  five: 5,
+  six: 6,
+  seven: 7,
+  eight: 8,
+  nine: 9,
+  ten: 10,
+  eleven: 11,
+  twelve: 12,
+  thirteen: 13,
+  fourteen: 14,
+  fifteen: 15,
+  twenty: 20,
+  thirty: 30,
+  sixty: 60,
+  ninety: 90,
+};
+
+/**
+ * Natural language horizon parser
+ * Accurately extracts forecast horizons from user prompts:
+ * - "next day", "tomorrow", "1 day", "1d" -> 1
+ * - "next week", "1 week", "7d" -> 7
+ * - "next 2 weeks", "two weeks" -> 14
+ * - "next month", "1 month", "30d" -> 30
+ * - "next quarter" -> 90
+ * - "next year" -> 365
+ * - word numbers ("three days", "five days")
+ * - arbitrary numeric days ("next 3 days", "10 days", "horizon 5")
+ */
+export function parseHorizonFromText(prompt, defaultHorizon = 14) {
+  if (!prompt || typeof prompt !== 'string') return defaultHorizon;
+  const p = prompt.toLowerCase().trim();
+
+  // 1. Tomorrow / Single day / Next day
+  if (/\b(tomorrow|next\s+day|following\s+day|single\s+day|one\s+day|1\s*day)\b/.test(p)) {
+    return 1;
+  }
+
+  // 2. Single week / Next week
+  if (/\b(next\s+week|coming\s+week|one\s+week|1\s*week)\b/.test(p)) {
+    return 7;
+  }
+
+  // 3. Single month / Next month
+  if (/\b(next\s+month|coming\s+month|one\s+month|1\s*month)\b/.test(p)) {
+    return 30;
+  }
+
+  // 4. Next quarter
+  if (/\b(next\s+quarter|coming\s+quarter|one\s+quarter|1\s*quarter)\b/.test(p)) {
+    return 90;
+  }
+
+  // 5. Next year
+  if (/\b(next\s+year|coming\s+year|one\s+year|1\s*year)\b/.test(p)) {
+    return 365;
+  }
+
+  // 6. Numeric with explicit units (e.g. "30days", "30 days", "2 weeks", "3 months", "7d", "14d")
+  const numMatch = p.match(/(\d+)\s*[-]?\s*(days?|periods?|weeks?|months?|quarters?|years?|d\b|w\b|m\b)/);
+  if (numMatch) {
+    const val = parseInt(numMatch[1], 10);
+    const unit = numMatch[2].toLowerCase();
+    if (unit.startsWith('w')) {
+      return Math.max(1, Math.min(val * 7, 365));
+    }
+    if (unit.startsWith('m')) {
+      return Math.max(1, Math.min(val * 30, 365));
+    }
+    if (unit.startsWith('q')) {
+      return Math.max(1, Math.min(val * 90, 365));
+    }
+    if (unit.startsWith('y')) {
+      return Math.max(1, Math.min(val * 365, 365));
+    }
+    return Math.max(1, Math.min(val, 365));
+  }
+
+  // 7. Word numbers with units (e.g. "three days", "two weeks")
+  const wordKeys = Object.keys(WORD_NUMBERS).join('|');
+  const wordRegex = new RegExp(`\\b(${wordKeys})\\s*[-]?\\s*(days?|periods?|weeks?|months?)`);
+  const wordMatch = p.match(wordRegex);
+  if (wordMatch) {
+    const val = WORD_NUMBERS[wordMatch[1]];
+    const unit = wordMatch[2].toLowerCase();
+    if (unit.includes('week')) {
+      return Math.max(1, Math.min(val * 7, 365));
+    }
+    if (unit.includes('month')) {
+      return Math.max(1, Math.min(val * 30, 365));
+    }
+    return Math.max(1, Math.min(val, 365));
+  }
+
+  // 8. General explicit horizon phrasing (e.g. "horizon of 5", "predict 10")
+  const horizonMatch = p.match(/\b(?:horizon|for|periods?)\s*(?:of)?\s*(\d+)\b/);
+  if (horizonMatch) {
+    return Math.max(1, Math.min(parseInt(horizonMatch[1], 10), 365));
+  }
+
+  return defaultHorizon;
+}
+

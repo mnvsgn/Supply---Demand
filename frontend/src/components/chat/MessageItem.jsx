@@ -9,6 +9,7 @@ import {
   Check,
   FileSpreadsheet,
   RotateCw,
+  Plus,
 } from 'lucide-react';
 import DatasetSummaryCard from '../upload/DatasetSummaryCard';
 import ForecastResultCard from '../forecast/ForecastResultCard';
@@ -28,6 +29,7 @@ export default function MessageItem({ message }) {
     runAnalytics,
     handleRegenerate,
     isGenerating,
+    resetChat,
   } = useChat();
 
   const handleCopy = () => {
@@ -132,7 +134,7 @@ export default function MessageItem({ message }) {
           </div>
 
           {/* Narrative Text */}
-          {message.content && (
+          {message.content && message.type !== 'error' && (
             <div className="text-sm text-neutral-200 leading-relaxed space-y-1">
               {renderFormattedText(message.content)}
             </div>
@@ -183,38 +185,58 @@ export default function MessageItem({ message }) {
             )}
           </ErrorBoundary>
 
-          {message.type === 'error' && (
-            <div className="rounded-xl bg-[#1c1414] border border-[#3b1d1d] p-4 space-y-2.5 text-xs">
-              <div className="flex items-center space-x-2 text-rose-400 font-medium">
-                <AlertOctagon className="w-4 h-4 text-rose-400 flex-shrink-0" />
-                <span className="font-semibold text-neutral-200">
-                  {message.data?.code === 'BACKEND_DISCONNECTED' ||
-                  message.data?.code === 'INTERNAL_SERVER_ERROR' ||
-                  message.content?.includes('connect') ||
-                  message.content?.includes('FastAPI')
-                    ? 'Internal Server Error'
-                    : 'System Notice'}
-                </span>
+          {message.type === 'error' && (() => {
+            const isSessionExpired =
+              message.data?.code === 'SESSION_NOT_FOUND' ||
+              message.data?.code === 'SESSION_EXPIRED' ||
+              message.content?.includes('Session Expired') ||
+              message.content?.includes('session has expired');
+
+            return (
+              <div className="rounded-xl bg-[#1c1414] border border-[#3b1d1d] p-4 space-y-2.5 text-xs">
+                <div className="flex items-center space-x-2 text-rose-400 font-medium">
+                  <AlertOctagon className={`w-4 h-4 flex-shrink-0 ${isSessionExpired ? 'text-amber-400' : 'text-rose-400'}`} />
+                  <span className="font-semibold text-neutral-200">
+                    {isSessionExpired
+                      ? 'Session Expired'
+                      : message.data?.code === 'BACKEND_DISCONNECTED' ||
+                        message.data?.code === 'INTERNAL_SERVER_ERROR' ||
+                        message.content?.includes('connect') ||
+                        message.content?.includes('FastAPI')
+                      ? 'Internal Server Error'
+                      : 'System Notice'}
+                  </span>
+                </div>
+                <p className="text-neutral-300 text-xs leading-relaxed">
+                  {message.content?.includes('Cannot connect to backend server') ||
+                  message.content?.includes('FastAPI is running') ||
+                  message.data?.code === 'BACKEND_DISCONNECTED'
+                    ? 'Internal Server Error: Unable to connect to the forecasting service. Please verify the service is running and try again in a few moments.'
+                    : message.content}
+                </p>
+                <div className="pt-1 flex items-center gap-2">
+                  {isSessionExpired && (
+                    <button
+                      onClick={() => resetChat && resetChat()}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-black bg-white hover:bg-neutral-200 font-semibold transition-colors cursor-pointer text-[11px] shadow-sm"
+                      title="Start a new chat session"
+                    >
+                      <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                      <span>New Chat</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleRegenerate && handleRegenerate(message.id)}
+                    disabled={isGenerating}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-neutral-300 hover:text-white bg-[#261e1e] hover:bg-[#332525] border border-[#4a2828] transition-colors cursor-pointer text-[11px] disabled:opacity-40"
+                  >
+                    <RotateCw className={`w-3 h-3 ${isGenerating ? 'animate-spin text-rose-400' : 'text-neutral-400'}`} />
+                    <span>Retry Request</span>
+                  </button>
+                </div>
               </div>
-              <p className="text-neutral-300 text-xs leading-relaxed">
-                {message.content?.includes('Cannot connect to backend server') ||
-                message.content?.includes('FastAPI is running') ||
-                message.data?.code === 'BACKEND_DISCONNECTED'
-                  ? 'Internal Server Error: Unable to connect to the forecasting service. Please verify the service is running and try again in a few moments.'
-                  : message.content}
-              </p>
-              <div className="pt-1">
-                <button
-                  onClick={() => handleRegenerate && handleRegenerate(message.id)}
-                  disabled={isGenerating}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-neutral-300 hover:text-white bg-[#261e1e] hover:bg-[#332525] border border-[#4a2828] transition-colors cursor-pointer text-[11px] disabled:opacity-40"
-                >
-                  <RotateCw className={`w-3 h-3 ${isGenerating ? 'animate-spin text-rose-400' : 'text-neutral-400'}`} />
-                  <span>Retry Request</span>
-                </button>
-              </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Assistant Action Bar with Regenerate & Sync Icon */}
           {message.type !== 'error' && (

@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import api from '../services/api';
+import { parseHorizonFromText } from '../utils/formatters';
 
 const FORMAL_DOMAIN_RESPONSE = `I am a specialized **Supply and Demand Forecasting Assistant**. My domain is strictly focused on supply-chain analytics, historical demand modeling, seasonal trend detection, and inventory planning.
 
@@ -253,7 +254,7 @@ export function useChat(activeDataset, confirmMapping, resetDataset) {
     abortControllerRef.current = controller;
 
     setIsForecasting(true);
-    const horizon = options.horizon || 14;
+    const horizon = options.horizon !== undefined && options.horizon !== null ? Number(options.horizon) : 14;
     const modelType = options.model_type || 'auto';
     const targetLevel = options.target_level || 'aggregate';
     const productId = options.product_id || null;
@@ -280,7 +281,7 @@ export function useChat(activeDataset, confirmMapping, resetDataset) {
       const pointsCount = forecastRes.forecast?.length || 0;
       const targetDesc = productId ? `for SKU **${productId}**` : 'for total aggregate demand';
 
-      const assistantText = `Demand projections generated ${targetDesc} across the next **${pointsCount} periods**.
+      const assistantText = `Demand projections generated ${targetDesc} across the next **${pointsCount} ${pointsCount === 1 ? 'period' : 'periods'}**.
 Our predictive engine analyzed your historical demand patterns, seasonal cycles, and run-rates to generate this planning outlook.
 Review the projected trajectory, peak demand periods, and planning schedule below:`;
 
@@ -418,6 +419,9 @@ The recommended forecasting method is **${winning}**, providing the highest hist
           return;
         }
 
+        // Parse requested forecast horizon from natural language prompt
+        const parsedHorizon = parseHorizonFromText(prompt, 14);
+
         // Clarification check: check if user asked for product-specific forecast
         const normSummary = ds.summary;
         const hasProducts = normSummary?.has_product_hierarchy || (normSummary?.unique_products_count > 1);
@@ -426,12 +430,12 @@ The recommended forecasting method is **${winning}**, providing the highest hist
           await new Promise((r) => setTimeout(r, 600));
           const topProducts = normSummary?.top_products || [];
           const options = [
-            { label: 'Forecast Aggregate Total Demand', target_level: 'aggregate', horizon: 14 },
+            { label: 'Forecast Aggregate Total Demand', target_level: 'aggregate', horizon: parsedHorizon },
             ...topProducts.slice(0, 3).map((p) => ({
               label: `Forecast SKU: ${p.product_id}`,
               target_level: 'product',
               product_id: p.product_id,
-              horizon: 14,
+              horizon: parsedHorizon,
             })),
           ];
 
@@ -444,10 +448,6 @@ The recommended forecasting method is **${winning}**, providing the highest hist
           addMessage('assistant', clar.question, 'clarification', clar);
           return;
         }
-
-        // Parse horizon
-        const horizonMatch = lower.match(/(\d+)\s*(days?|periods?|weeks?|months?)/);
-        const parsedHorizon = horizonMatch ? parseInt(horizonMatch[1], 10) : 14;
 
         let modelType = 'auto';
         if (lower.includes('xgboost')) modelType = 'xgboost';
@@ -610,7 +610,7 @@ The recommended forecasting method is **${winning}**, providing the highest hist
       await handleSendPrompt(precedingUserPrompt, activeDataset, true);
     } else if (targetMsg.type === 'forecast' && targetMsg.data) {
       await runForecast({
-        horizon: targetMsg.data.horizon || 14,
+        horizon: targetMsg.data.horizon ?? 14,
         model_type: targetMsg.data.model_name || 'auto',
       }, activeDataset);
     } else if (targetMsg.type === 'evaluation') {
