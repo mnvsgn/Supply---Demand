@@ -11,6 +11,7 @@ import {
   Legend,
   ReferenceLine,
 } from 'recharts';
+import { useTheme } from '../../context/ThemeContext';
 import { formatNumber, formatDate } from '../../utils/formatters';
 import { Eye, EyeOff, Info, Layers, Tag, Calendar, Clock } from 'lucide-react';
 
@@ -23,6 +24,7 @@ export default function ForecastChart({
   horizon = 14,
   units = 'Units',
 }) {
+  const { isDark } = useTheme();
   const [showBounds, setShowBounds] = useState(true);
   const [showHistorical, setShowHistorical] = useState(true);
 
@@ -277,11 +279,15 @@ export default function ForecastChart({
               </linearGradient>
             </defs>
 
-            <CartesianGrid strokeDasharray="3 3" stroke="#262626" vertical={false} />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke={isDark ? '#262626' : '#e2e8f0'}
+              vertical={false}
+            />
 
             <XAxis
               dataKey="date"
-              stroke="#737373"
+              stroke={isDark ? '#737373' : '#64748b'}
               fontSize={11}
               tickLine={false}
               tickFormatter={(d) => {
@@ -292,7 +298,7 @@ export default function ForecastChart({
             />
 
             <YAxis
-              stroke="#737373"
+              stroke={isDark ? '#737373' : '#64748b'}
               fontSize={11}
               tickLine={false}
               domain={yDomain}
@@ -300,7 +306,11 @@ export default function ForecastChart({
             />
 
             <Tooltip
-              cursor={{ stroke: '#333333', strokeWidth: 1, strokeDasharray: '3 3' }}
+              cursor={{
+                stroke: isDark ? '#333333' : '#cbd5e1',
+                strokeWidth: 1,
+                strokeDasharray: '3 3',
+              }}
               content={<CustomTooltip />}
             />
 
@@ -313,7 +323,7 @@ export default function ForecastChart({
                 label={{
                   value: 'Forecast Start',
                   position: 'insideTopLeft',
-                  fill: '#a5b4fc',
+                  fill: isDark ? '#a5b4fc' : '#4f46e5',
                   fontSize: 10,
                   offset: 8,
                 }}
@@ -365,7 +375,7 @@ export default function ForecastChart({
               dataKey="predicted"
               stroke="#3b82f6"
               strokeWidth={2.5}
-              dot={{ r: 3.5, fill: '#3b82f6', stroke: '#1e3a8a', strokeWidth: 1.5 }}
+              dot={{ r: 3.5, fill: '#3b82f6', stroke: isDark ? '#1e3a8a' : '#ffffff', strokeWidth: 1.5 }}
               activeDot={{ r: 6, fill: '#60a5fa' }}
               name="Predicted Demand"
             />

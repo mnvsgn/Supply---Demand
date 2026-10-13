@@ -1,13 +1,17 @@
 import React from 'react';
 import { useChat } from '../../context/ChatContext';
+import { useTheme } from '../../context/ThemeContext';
 import {
   BarChart3,
   PanelLeft,
   RefreshCw,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 export default function Navbar({ onToggleSidebar }) {
   const { backendConnected, checkBackendHealth } = useChat();
+  const { isDark, toggleTheme } = useTheme();
 
   return (
     <header className="h-13 border-b border-[#212121] bg-[#141414] sticky top-0 z-20 flex items-center justify-between px-3.5 sm:px-5">
@@ -37,8 +41,21 @@ export default function Navbar({ onToggleSidebar }) {
         </div>
       </div>
 
-      {/* Right side: Backend Health Indicator */}
+      {/* Right side: Theme Toggle & Backend Health Indicator */}
       <div className="flex items-center space-x-2">
+        <button
+          onClick={toggleTheme}
+          title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          className="p-1.5 rounded-md bg-[#181818] hover:bg-[#222222] border border-[#262626] text-neutral-300 hover:text-white transition-colors cursor-pointer"
+        >
+          {isDark ? (
+            <Sun className="w-3.5 h-3.5 text-amber-400" />
+          ) : (
+            <Moon className="w-3.5 h-3.5 text-blue-400" />
+          )}
+        </button>
+
         <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-[#181818] border border-[#262626] text-[11px]">
           <span
             className={`w-1.5 h-1.5 rounded-full ${

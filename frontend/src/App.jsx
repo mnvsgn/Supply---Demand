@@ -1,6 +1,7 @@
 import React from 'react';
 import { RouterProvider, useRouter } from './context/RouterContext';
 import { ChatProvider } from './context/ChatContext';
+import { ThemeProvider } from './context/ThemeContext';
 import ChatPage from './pages/ChatPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminPerformancePage from './pages/admin/AdminPerformancePage';
@@ -38,9 +39,11 @@ function RouteSwitch() {
 export default function App() {
   return (
     <ErrorBoundary>
-      <RouterProvider>
-        <RouteSwitch />
-      </RouterProvider>
+      <ThemeProvider>
+        <RouterProvider>
+          <RouteSwitch />
+        </RouterProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

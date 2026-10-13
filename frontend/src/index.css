@@ -1,10 +1,15 @@
 @import "tailwindcss";
 
-:root {
+:root,
+html.dark {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color-scheme: dark;
+}
+
+html.light {
+  color-scheme: light;
 }
 
 body {
@@ -13,4 +18,331 @@ body {
   min-height: 100vh;
   background-color: #121212;
   color: #f3f4f6;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+html.light body {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+/* ==========================================================================
+   LIGHT MODE THEME OVERRIDES
+   Maps dark palette surfaces, borders, typography, and semantic badges
+   to high-contrast light mode equivalents across all pages & components.
+   ========================================================================== */
+
+/* 1. Primary Page & Workspace Backgrounds */
+html.light .bg-\[\#121212\] {
+  background-color: #f8fafc !important;
+}
+
+/* 2. Sidebar, Header, Footer & Card Surfaces */
+html.light .bg-\[\#141414\],
+html.light .bg-\[\#161616\],
+html.light .bg-\[\#181818\],
+html.light .bg-\[\#181818\]\/90,
+html.light .bg-slate-900\/90 {
+  background-color: #ffffff !important;
+}
+
+/* Nested subtle panels inside white cards (KPI tiles, chart boxes, empty states) */
+html.light .bg-\[\#181818\] .bg-\[\#141414\],
+html.light .bg-\[\#161616\] .bg-\[\#141414\],
+html.light .bg-\[\#171717\],
+html.light .bg-\[\#151515\]\/60,
+html.light .bg-slate-950,
+html.light .bg-slate-950\/80,
+html.light .bg-slate-950\/60,
+html.light .bg-slate-950\/40 {
+  background-color: #f8fafc !important;
+}
+
+/* 3. Secondary Surfaces, Inputs, Toolbar Pills & Table Headers */
+html.light .bg-\[\#1a1a1a\],
+html.light .bg-\[\#1b1b1b\],
+html.light .bg-\[\#1c1c1c\],
+html.light .bg-\[\#1e1e1e\],
+html.light .bg-\[\#1f1f1f\],
+html.light .bg-\[\#202020\],
+html.light .bg-\[\#212121\],
+html.light .bg-\[\#222222\],
+html.light .bg-\[\#242424\],
+html.light .bg-slate-900,
+html.light .bg-slate-900\/60,
+html.light .bg-slate-800,
+html.light .bg-slate-800\/80,
+html.light .bg-neutral-800,
+html.light .bg-neutral-800\/60 {
+  background-color: #f1f5f9 !important;
+}
+
+/* User message bubble & skeleton bar */
+html.light .bg-\[\#262626\] {
+  background-color: #e2e8f0 !important;
+}
+
+html.light .bg-\[\#282828\],
+html.light .bg-\[\#2a2a2a\] {
+  background-color: #cbd5e1 !important;
+}
+
+/* 4. Interactive Hover States */
+html.light .hover\:bg-\[\#1a1a1a\]:hover,
+html.light .hover\:bg-\[\#1f1f1f\]:hover,
+html.light .hover\:bg-\[\#202020\]:hover,
+html.light .hover\:bg-\[\#212121\]:hover,
+html.light .hover\:bg-\[\#222222\]:hover,
+html.light .hover\:bg-\[\#242424\]:hover,
+html.light .hover\:bg-\[\#262626\]:hover,
+html.light .hover\:bg-\[\#282828\]:hover,
+html.light .hover\:bg-\[\#2a2a2a\]:hover,
+html.light .hover\:bg-slate-900\/40:hover,
+html.light .hover\:bg-slate-900\/50:hover,
+html.light .hover\:bg-slate-700:hover,
+html.light .hover\:bg-neutral-800:hover {
+  background-color: #e2e8f0 !important;
+}
+
+/* 5. Borders & Dividers */
+html.light .border-\[\#212121\],
+html.light .border-\[\#222222\],
+html.light .border-\[\#222222\]\/80,
+html.light .border-\[\#262626\],
+html.light .border-\[\#282828\],
+html.light .border-\[\#2a2a2a\],
+html.light .border-\[\#2b2b2b\],
+html.light .border-\[\#2c2c2c\],
+html.light .border-\[\#2e2e2e\],
+html.light .border-\[\#303030\],
+html.light .border-\[\#333333\],
+html.light .border-\[\#383838\],
+html.light .border-slate-850,
+html.light .border-slate-800,
+html.light .border-slate-800\/80,
+html.light .border-slate-700,
+html.light .border-slate-700\/80,
+html.light .border-slate-700\/60,
+html.light .border-neutral-700 {
+  border-color: #e2e8f0 !important;
+}
+
+html.light .hover\:border-\[\#2a2a2a\]:hover,
+html.light .hover\:border-\[\#333333\]:hover,
+html.light .focus-within\:border-\[\#383838\]:focus-within {
+  border-color: #cbd5e1 !important;
+}
+
+html.light .divide-\[\#1f1f1f\] > :not([hidden]) ~ :not([hidden]),
+html.light .divide-\[\#222222\] > :not([hidden]) ~ :not([hidden]),
+html.light .divide-slate-850 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #e2e8f0 !important;
+}
+
+/* 6. Typography Hierarchy */
+html.light .text-white:not(.bg-emerald-600 *):not(.bg-emerald-600):not(.bg-blue-600 *):not(.bg-blue-600),
+html.light .text-neutral-100,
+html.light .text-slate-100 {
+  color: #0f172a !important;
+}
+
+html.light .bg-emerald-600,
+html.light .bg-emerald-600 *,
+html.light .bg-blue-600,
+html.light .bg-blue-600 * {
+  color: #ffffff !important;
+}
+
+html.light .text-neutral-200,
+html.light .text-slate-200 {
+  color: #1e293b !important;
+}
+
+html.light .text-neutral-300,
+html.light .text-slate-300 {
+  color: #334155 !important;
+}
+
+html.light .text-neutral-400,
+html.light .text-slate-400 {
+  color: #475569 !important;
+}
+
+html.light .text-neutral-500,
+html.light .text-slate-500,
+html.light .text-neutral-600 {
+  color: #64748b !important;
+}
+
+html.light .placeholder-neutral-500::placeholder {
+  color: #94a3b8 !important;
+}
+
+html.light .hover\:text-white:hover,
+html.light .hover\:text-neutral-200:hover,
+html.light .hover\:text-neutral-300:hover {
+  color: #0f172a !important;
+}
+
+/* 7. Primary White Action Buttons in Light Mode -> High-Contrast Slate-900 */
+html.light button.bg-white,
+html.light a.bg-white {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #0f172a !important;
+}
+
+html.light button.bg-white:hover,
+html.light a.bg-white:hover {
+  background-color: #1e293b !important;
+}
+
+html.light button.bg-white svg,
+html.light button.bg-white span {
+  color: #ffffff !important;
+}
+
+html.light button.disabled\:bg-\[\#262626\]:disabled {
+  background-color: #e2e8f0 !important;
+  color: #94a3b8 !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light button.disabled\:bg-\[\#262626\]:disabled svg,
+html.light button.disabled\:bg-\[\#262626\]:disabled span {
+  color: #94a3b8 !important;
+}
+
+/* 8. Semantic Badges & Accent Containers (Emerald, Blue, Amber, Rose, Purple, Cyan) */
+html.light .bg-\[\#193228\],
+html.light .bg-\[\#193228\]\/50,
+html.light .bg-emerald-950,
+html.light .bg-emerald-950\/40,
+html.light .bg-emerald-950\/20 {
+  background-color: #ecfdf5 !important;
+}
+
+html.light .border-\[\#234b3c\],
+html.light .border-emerald-800\/40,
+html.light .border-emerald-800\/50 {
+  border-color: #a7f3d0 !important;
+}
+
+html.light .text-emerald-400,
+html.light .text-emerald-300,
+html.light .group:hover .group-hover\:text-emerald-300 {
+  color: #059669 !important;
+}
+
+/* Blue / Staged Attachment Cards */
+html.light .bg-\[\#141a24\],
+html.light .bg-\[\#0e141e\],
+html.light .bg-\[\#1a1f28\],
+html.light .bg-\[\#111722\],
+html.light .bg-blue-950\/20,
+html.light .bg-blue-950\/30,
+html.light .bg-blue-950\/40 {
+  background-color: #eff6ff !important;
+}
+
+html.light .border-\[\#223048\],
+html.light .border-\[\#1d2b40\],
+html.light .border-\[\#2b394e\],
+html.light .border-\[\#233145\],
+html.light .border-blue-800,
+html.light .border-blue-800\/40 {
+  border-color: #bfdbfe !important;
+}
+
+html.light .text-blue-400,
+html.light .text-blue-300 {
+  color: #2563eb !important;
+}
+
+/* Amber / Warning Cards */
+html.light .bg-amber-950\/20,
+html.light .bg-amber-950\/30,
+html.light .bg-amber-950\/40,
+html.light .bg-amber-950\/60,
+html.light .bg-amber-500\/10 {
+  background-color: #fffbeb !important;
+}
+
+html.light .border-amber-800\/30,
+html.light .border-amber-800\/40,
+html.light .border-amber-800\/50,
+html.light .border-amber-500\/20 {
+  border-color: #fde68a !important;
+}
+
+html.light .text-amber-400,
+html.light .text-amber-400\/90,
+html.light .text-amber-300,
+html.light .text-amber-300\/90,
+html.light .text-amber-200\/80,
+html.light .text-amber-200\/90 {
+  color: #d97706 !important;
+}
+
+/* Rose / Error Cards */
+html.light .bg-\[\#1c1414\],
+html.light .bg-\[\#1a1212\],
+html.light .bg-rose-950\/30,
+html.light .bg-rose-950\/40,
+html.light .bg-rose-950\/50 {
+  background-color: #fff1f2 !important;
+}
+
+html.light .bg-\[\#261e1e\],
+html.light .bg-\[\#2a1a1a\] {
+  background-color: #ffe4e6 !important;
+}
+
+html.light .hover\:bg-\[\#332525\]:hover,
+html.light .hover\:bg-\[\#382020\]:hover,
+html.light .hover\:bg-rose-950\/30:hover {
+  background-color: #fecdd3 !important;
+}
+
+html.light .border-\[\#3b1d1d\],
+html.light .border-\[\#4a2828\],
+html.light .border-rose-900\/40,
+html.light .border-rose-900\/50,
+html.light .border-rose-800\/40,
+html.light .border-rose-800\/50 {
+  border-color: #fecdd3 !important;
+}
+
+html.light .text-rose-400,
+html.light .text-rose-300 {
+  color: #e11d48 !important;
+}
+
+/* Purple & Cyan Badges */
+html.light .bg-purple-950\/20,
+html.light .bg-purple-950\/40,
+html.light .bg-purple-900\/40 {
+  background-color: #faf5ff !important;
+}
+
+html.light .border-purple-800\/40,
+html.light .border-purple-800\/50 {
+  border-color: #e9d5ff !important;
+}
+
+html.light .text-purple-400,
+html.light .text-purple-200 {
+  color: #7e22ce !important;
+}
+
+html.light .bg-cyan-950\/40 {
+  background-color: #ecfeff !important;
+}
+
+html.light .border-cyan-800\/40 {
+  border-color: #a5f3fc !important;
+}
+
+html.light .text-cyan-400 {
+  color: #0891b2 !important;
 }

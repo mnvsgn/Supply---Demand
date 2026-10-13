@@ -1,6 +1,7 @@
 import React from 'react';
 import { useChat } from '../../context/ChatContext';
 import { Link } from '../../context/RouterContext';
+import { useTheme } from '../../context/ThemeContext';
 import {
   PanelLeft,
   Plus,
@@ -13,6 +14,8 @@ import {
   Layers,
   Calendar,
   LayoutDashboard,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { formatInteger } from '../../utils/formatters';
 
@@ -28,6 +31,7 @@ export default function Sidebar({ isOpen, onToggle, onClose }) {
     isEvaluating,
     isAnalyzing,
   } = useChat();
+  const { isDark, toggleTheme } = useTheme();
 
   const handleNewForecast = () => {
     resetChat();
@@ -170,6 +174,24 @@ export default function Sidebar({ isOpen, onToggle, onClose }) {
                 Admin Dashboard (/admin)
               </div>
             </div>
+
+            {/* 7. Theme Toggle (Light / Dark) */}
+            <div className="relative group w-full flex justify-center">
+              <button
+                onClick={toggleTheme}
+                aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+                className="w-10 h-10 rounded-lg flex items-center justify-center text-neutral-400 hover:text-white hover:bg-[#212121] transition-colors cursor-pointer"
+              >
+                {isDark ? (
+                  <Sun className="w-5 h-5 text-amber-400 stroke-[1.75]" />
+                ) : (
+                  <Moon className="w-5 h-5 text-blue-400 stroke-[1.75]" />
+                )}
+              </button>
+              <div className="absolute left-[calc(100%+8px)] top-1/2 -translate-y-1/2 px-2.5 py-1 bg-[#212121] text-neutral-100 text-xs font-normal rounded-md shadow-xl border border-[#303030] whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                {isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              </div>
+            </div>
           </div>
 
           {/* Bottom Backend Indicator */}
@@ -210,7 +232,7 @@ export default function Sidebar({ isOpen, onToggle, onClose }) {
         >
           {/* Top Container */}
           <div className="flex flex-col flex-1 min-h-0">
-            {/* Header: Brand + Toggle Close Button */}
+            {/* Header: Brand + Theme & Toggle Close Buttons */}
             <div className="h-13 px-3.5 flex items-center justify-between border-b border-[#212121]">
               <div className="flex items-center space-x-2.5 min-w-0">
                 <div className="w-7 h-7 rounded-lg bg-[#193228] text-emerald-400 border border-[#234b3c] flex items-center justify-center flex-shrink-0">
@@ -226,15 +248,31 @@ export default function Sidebar({ isOpen, onToggle, onClose }) {
                 </div>
               </div>
 
-              {/* Collapse Sidebar Button */}
-              <button
-                onClick={onToggle}
-                title="Collapse sidebar (Ctrl+B)"
-                aria-label="Collapse sidebar"
-                className="w-7 h-7 rounded-md hover:bg-[#212121] text-neutral-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-              >
-                <PanelLeft className="w-4 h-4 stroke-[1.75]" />
-              </button>
+              <div className="flex items-center space-x-1">
+                {/* Quick Theme Toggle Button */}
+                <button
+                  onClick={toggleTheme}
+                  title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                  aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+                  className="w-7 h-7 rounded-md hover:bg-[#212121] text-neutral-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                >
+                  {isDark ? (
+                    <Sun className="w-4 h-4 text-amber-400 stroke-[1.75]" />
+                  ) : (
+                    <Moon className="w-4 h-4 text-blue-400 stroke-[1.75]" />
+                  )}
+                </button>
+
+                {/* Collapse Sidebar Button */}
+                <button
+                  onClick={onToggle}
+                  title="Collapse sidebar (Ctrl+B)"
+                  aria-label="Collapse sidebar"
+                  className="w-7 h-7 rounded-md hover:bg-[#212121] text-neutral-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                >
+                  <PanelLeft className="w-4 h-4 stroke-[1.75]" />
+                </button>
+              </div>
             </div>
 
             {/* Primary Action Button: New Forecast */}
@@ -319,8 +357,27 @@ export default function Sidebar({ isOpen, onToggle, onClose }) {
             </div>
           </div>
 
-          {/* Bottom Footer: Session & Backend Connectivity */}
+          {/* Bottom Footer: Theme Switcher, Admin & Backend Connectivity */}
           <div className="p-2.5 border-t border-[#212121] bg-[#141414] space-y-2">
+            {/* Appearance / Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="w-full flex items-center justify-between p-2 rounded-lg bg-[#181818] hover:bg-[#202020] text-xs text-neutral-300 hover:text-white border border-[#262626] transition-colors cursor-pointer"
+              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              <div className="flex items-center space-x-2">
+                {isDark ? (
+                  <Sun className="w-3.5 h-3.5 text-amber-400" />
+                ) : (
+                  <Moon className="w-3.5 h-3.5 text-blue-400" />
+                )}
+                <span>Appearance</span>
+              </div>
+              <span className="text-[10px] text-neutral-400 font-mono px-1.5 py-0.5 rounded bg-[#222222] border border-[#2c2c2c]">
+                {isDark ? 'Dark Mode' : 'Light Mode'}
+              </span>
+            </button>
+
             {/* Admin Portal Shortcut */}
             <Link
               to="/admin"

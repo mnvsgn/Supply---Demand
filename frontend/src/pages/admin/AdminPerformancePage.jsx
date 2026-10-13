@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import AdminLayout from './AdminLayout';
+import { useTheme } from '../../context/ThemeContext';
 import { getModelPerformance } from '../../services/adminService';
 import {
   ResponsiveContainer,
@@ -24,6 +25,7 @@ import {
 import { formatInteger, formatDate, formatTime, formatPercentage } from '../../utils/formatters';
 
 export default function AdminPerformancePage() {
+  const { isDark } = useTheme();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -287,26 +289,30 @@ export default function AdminPerformancePage() {
                           data={secC.comparison_table}
                           margin={{ top: 10, right: 10, left: -20, bottom: 20 }}
                         >
-                          <CartesianGrid strokeDasharray="3 3" stroke="#262626" vertical={false} />
+                          <CartesianGrid
+                            strokeDasharray="3 3"
+                            stroke={isDark ? '#262626' : '#e2e8f0'}
+                            vertical={false}
+                          />
                           <XAxis
                             dataKey="model_name"
-                            stroke="#737373"
+                            stroke={isDark ? '#737373' : '#64748b'}
                             fontSize={11}
                             tickLine={false}
                           />
                           <YAxis
-                            stroke="#737373"
+                            stroke={isDark ? '#737373' : '#64748b'}
                             fontSize={11}
                             tickLine={false}
                             unit="%"
                           />
                           <Tooltip
                             contentStyle={{
-                              backgroundColor: '#1c1c1c',
-                              borderColor: '#333333',
+                              backgroundColor: isDark ? '#1c1c1c' : '#ffffff',
+                              borderColor: isDark ? '#333333' : '#e2e8f0',
                               borderRadius: '8px',
                               fontSize: '12px',
-                              color: '#fff',
+                              color: isDark ? '#fff' : '#0f172a',
                             }}
                           />
                           <Bar dataKey="wape_pct" radius={[4, 4, 0, 0]} fill="#10b981" />

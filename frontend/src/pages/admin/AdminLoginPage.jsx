@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useRouter, Link } from '../../context/RouterContext';
+import { useTheme } from '../../context/ThemeContext';
 import { login, isAuthenticated } from '../../services/adminService';
-import { BarChart3, Lock, User, AlertCircle, Loader2, ArrowLeft } from 'lucide-react';
+import { BarChart3, Lock, User, AlertCircle, Loader2, ArrowLeft, Sun, Moon } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const { navigate } = useRouter();
+  const { isDark, toggleTheme } = useTheme();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
@@ -39,8 +41,8 @@ export default function AdminLoginPage() {
 
   return (
     <div className="min-h-screen bg-[#121212] text-neutral-100 flex flex-col items-center justify-center p-4 selection:bg-emerald-600 selection:text-white">
-      {/* Back to chat link */}
-      <div className="w-full max-w-sm mb-4">
+      {/* Top Bar: Back to chat link + Theme Toggle */}
+      <div className="w-full max-w-sm mb-4 flex items-center justify-between">
         <Link
           to="/"
           className="inline-flex items-center space-x-1.5 text-xs text-neutral-400 hover:text-white transition-colors"
@@ -48,6 +50,25 @@ export default function AdminLoginPage() {
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Chat Workspace</span>
         </Link>
+
+        <button
+          onClick={toggleTheme}
+          title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-[#161616] hover:bg-[#222222] text-neutral-300 hover:text-white border border-[#262626] text-xs transition-colors cursor-pointer"
+        >
+          {isDark ? (
+            <>
+              <Sun className="w-3.5 h-3.5 text-amber-400" />
+              <span>Light</span>
+            </>
+          ) : (
+            <>
+              <Moon className="w-3.5 h-3.5 text-blue-400" />
+              <span>Dark</span>
+            </>
+          )}
+        </button>
       </div>
 
       {/* Login Card */}

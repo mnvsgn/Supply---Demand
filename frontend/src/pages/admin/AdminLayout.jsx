@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useRouter, Link } from '../../context/RouterContext';
+import { useTheme } from '../../context/ThemeContext';
 import {
   isAuthenticated,
   getAdminUsername,
@@ -13,10 +14,13 @@ import {
   LogOut,
   MessageSquare,
   ShieldAlert,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 export default function AdminLayout({ children, currentTab = 'dashboard' }) {
   const { currentPath, navigate } = useRouter();
+  const { isDark, toggleTheme } = useTheme();
   const username = getAdminUsername();
 
   // Authentication Guard: redirect to login if not authenticated
@@ -71,8 +75,27 @@ export default function AdminLayout({ children, currentTab = 'dashboard' }) {
           </span>
         </div>
 
-        {/* Right side: Chat link & Admin User Actions */}
-        <div className="flex items-center space-x-3">
+        {/* Right side: Theme Toggle, Chat link & Admin User Actions */}
+        <div className="flex items-center space-x-2.5 sm:space-x-3">
+          <button
+            onClick={toggleTheme}
+            title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="flex items-center space-x-1.5 text-xs text-neutral-300 hover:text-white px-2.5 py-1.5 rounded-lg bg-[#1c1c1c] hover:bg-[#242424] border border-[#2a2a2a] transition-colors cursor-pointer"
+          >
+            {isDark ? (
+              <>
+                <Sun className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden sm:inline">Light</span>
+              </>
+            ) : (
+              <>
+                <Moon className="w-3.5 h-3.5 text-blue-400" />
+                <span className="hidden sm:inline">Dark</span>
+              </>
+            )}
+          </button>
+
           <Link
             to="/"
             className="flex items-center space-x-1.5 text-xs text-neutral-400 hover:text-white px-2.5 py-1.5 rounded-lg hover:bg-[#1f1f1f] transition-colors"

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useChat } from '../context/ChatContext';
+import { useTheme } from '../context/ThemeContext';
 import Sidebar from '../components/layout/Sidebar';
 import ChatWindow from '../components/ChatWindow';
 import ChatInput from '../components/ChatInput';
-import { PanelLeft } from 'lucide-react';
+import { PanelLeft, Sun, Moon } from 'lucide-react';
 
 /**
  * ChatPage is the full-height workspace combining on/off Sidebar,
@@ -20,6 +21,7 @@ export default function ChatPage() {
   });
 
   const { resetChat } = useChat();
+  const { isDark, toggleTheme } = useTheme();
 
   const handleToggleSidebar = () => {
     setSidebarOpen((prev) => {
@@ -67,6 +69,26 @@ export default function ChatPage() {
             <PanelLeft className="w-4 h-4" />
           </button>
         )}
+
+        {/* Floating Quick Theme Toggle Button (top-right corner) */}
+        <button
+          onClick={toggleTheme}
+          title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          className="absolute top-3 right-4 z-30 flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-[#181818]/90 hover:bg-[#222222] text-neutral-300 hover:text-white border border-[#282828] shadow-sm backdrop-blur-sm cursor-pointer transition-colors text-xs"
+        >
+          {isDark ? (
+            <>
+              <Sun className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Light</span>
+            </>
+          ) : (
+            <>
+              <Moon className="w-3.5 h-3.5 text-blue-400" />
+              <span className="hidden sm:inline">Dark</span>
+            </>
+          )}
+        </button>
 
         {/* Scrollable Conversation Stream */}
         <main className="flex-1 overflow-y-auto flex flex-col relative">
