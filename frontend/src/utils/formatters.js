@@ -169,12 +169,16 @@ export function formatBusinessModelName(rawName) {
 }
 
 /**
- * Format error metrics into executive accuracy confidence
+ * Format error metrics into executive accuracy confidence / reliability rating (0-100%).
+ * Handles both percentage format (e.g. 1.21 -> 99%, 6.66 -> 93%) and decimal ratio format (e.g. 0.0666 -> 93%).
  */
 export function formatAccuracyRate(wape) {
-  if (wape === null || wape === undefined || isNaN(wape)) return 'High Confidence';
-  const accuracy = Math.max(0, Math.min(100, Math.round((1 - wape) * 100)));
-  return `${accuracy}% Historical Accuracy`;
+  if (wape === null || wape === undefined || isNaN(wape)) return 'High Reliability';
+  const num = Number(wape);
+  // If wape is given as decimal ratio (<= 1.0 and > 0), convert to percentage
+  const errorPct = Math.abs(num) <= 1 && num !== 0 ? num * 100 : num;
+  const accuracy = Math.max(0, Math.min(100, Math.round(100 - errorPct)));
+  return `${accuracy}%`;
 }
 
 /**

@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import ForecastChart from './ForecastChart';
 import ForecastTable from './ForecastTable';
-import { formatNumber, formatPercentage, formatBusinessModelName } from '../../utils/formatters';
+import { formatNumber, formatPercentage, formatBusinessModelName, formatAccuracyRate } from '../../utils/formatters';
 
 export default function ForecastResultCard({ forecastResult }) {
   const { runForecast, isForecasting, sessionId, activeDataset } = useChat();
@@ -110,9 +110,10 @@ export default function ForecastResultCard({ forecastResult }) {
         <div className="p-3 rounded-xl bg-[#141414] border border-[#262626]">
           <span className="text-[10px] uppercase font-semibold text-neutral-400 block">Forecast Reliability</span>
           <span className="text-base sm:text-lg font-bold font-mono text-emerald-400">
-            {metrics.wape !== null && metrics.wape !== undefined
-              ? `${Math.max(0, Math.min(100, Math.round((1 - metrics.wape) * 100)))}%`
-              : 'High Reliability'}
+            {formatAccuracyRate(
+              metrics?.wape ??
+              forecastResult?.model_comparison?.find((m) => m.is_best || m.status === 'selected')?.metrics?.wape
+            )}
           </span>
           <span className="text-[10px] text-neutral-500 block">historical accuracy rating</span>
         </div>
